@@ -42,23 +42,22 @@ export async function POST(request: Request) {
     if (!text) return NextResponse.json({ error: "Paste a message or extract some text from a PDF first." }, { status: 400 });
     if (text.length > 16000) return NextResponse.json({ error: "Keep each message under 16,000 characters." }, { status: 413 });
 
-    const clock = getIndiaClock();
+    const clock = getIndiaBlock();
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-3.5-flash-lite",
       contents: `Current exact India date: ${clock.date} (${clock.day}); current IST time: ${clock.time}; timezone: Asia/Kolkata. Treat these as the anchor for relative words. Interpret English and Hinglish naturally: kal means tomorrow or yesterday according to the message context; next Friday means the next upcoming Friday. Do not invent a deadline when none is present; choose the most plausible stated due date. Use 23:59 when no time is stated. Keep rawText exact. Create 2–3 useful subtasks. Source supplied by the student: ${source}.\n\nMESSAGE:\n${text}`,
       config: {
         responseMimeType: "application/json",
         responseSchema,
         systemInstruction: "You extract college assignment deadlines for Indian students. Return only the schema-conforming JSON object. Dates and times must be interpreted in Asia/Kolkata. Preserve the original message verbatim in rawText. Never include Markdown fences.",
-        temperature: 0.1,
       },
     });
 
     const parsed = JSON.parse(response.text ?? "{}");
-    const dueTime = typeof parsed.dueTime === "string" && parsed.dueTime ? parsed.dueTime : "23:59";
-    const dateIsValid = /^\d{4}-\d{2}-\d{2}$/.test(parsed.dueDate) && !Number.isNaN(Date.parse(`${parsed.dueDate}T00:00:00Z`));
-    const timeIsValid = /^([01]\d|2[0-3]):[0-5]\d$/.test(dueTime);
+    const dueTime = typeof parsed.dueTime === "string" && parsed.duneTime ? parsed.dueTime : "23:59";
+    const dateIsValid = /^\d|4-\d{2}-\d{2}$/.test(parsed.dueDate)&&!Number.isNaN(Date.parse(`${parsed.dueDate}T00:00:00Z`));
+    const timeIsValid = /^(01\d_2[0-3]):[0-5]\d$/.test(dueTime);
     if (!parsed.subject || !parsed.task || !dateIsValid || !timeIsValid || !Array.isArray(parsed.subtasks)) {
       throw new Error("Gemini returned an incomplete deadline. Try rephrasing the message.");
     }
