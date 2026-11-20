@@ -32,7 +32,7 @@ function getIndiaClock() {
 
 export async function POST(request: Request) {
   if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "YOUR_KEY_HERE") {
-    return NextResponse.json({ error: "Add your Google Gemini API key to .env.local, then restart the dev server." }, { status: 503 });
+    return NextResponse.json({ error: "Set GEMINI_API_KEY in .env.local for local development or in your Netlify/Vercel project environment variables, then restart or redeploy." }, { status: 503 });
   }
 
   try {
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     const clock = getIndiaClock();
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.5-flash-lite",
       contents: `Current exact India date: ${clock.date} (${clock.day}); current IST time: ${clock.time}; timezone: Asia/Kolkata. Treat these as the anchor for relative words. Interpret English and Hinglish naturally: kal means tomorrow or yesterday according to the message context; next Friday means the next upcoming Friday. Do not invent a deadline when none is present; choose the most plausible stated due date. Use 23:59 when no time is stated. Keep rawText exact. Create 2–3 useful subtasks. Source supplied by the student: ${source}.\n\nMESSAGE:\n${text}`,
       config: {
         responseMimeType: "application/json",
