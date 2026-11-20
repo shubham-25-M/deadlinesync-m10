@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     if (!text) return NextResponse.json({ error: "Paste a message or extract some text from a PDF first." }, { status: 400 });
     if (text.length > 16000) return NextResponse.json({ error: "Keep each message under 16,000 characters." }, { status: 413 });
 
-    const clock = getIndiaBlock();
+    const clock = getIndiaClock();
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const response = await ai.models.generateContent({
       model: "gemini-3.5-flash-lite",
@@ -55,9 +55,9 @@ export async function POST(request: Request) {
     });
 
     const parsed = JSON.parse(response.text ?? "{}");
-    const dueTime = typeof parsed.dueTime === "string" && parsed.duneTime ? parsed.dueTime : "23:59";
-    const dateIsValid = /^\d|4-\d{2}-\d{2}$/.test(parsed.dueDate)&&!Number.isNaN(Date.parse(`${parsed.dueDate}T00:00:00Z`));
-    const timeIsValid = /^(01\d_2[0-3]):[0-5]\d$/.test(dueTime);
+    const dueTime = typeof parsed.dueTime === "string" && parsed.dueTime ? parsed.dueTime : "23:59";
+    const dateIsValid = /^\d{4}-\d{2}-\d{2}$/.test(parsed.dueDate) && !Number.isNaN(Date.parse(`${parsed.dueDate}T00:00:00Z`));
+    const timeIsValid = /^([01]\d|2[0-3]):[0-5]\d$/.test(dueTime);
     if (!parsed.subject || !parsed.task || !dateIsValid || !timeIsValid || !Array.isArray(parsed.subtasks)) {
       throw new Error("Gemini returned an incomplete deadline. Try rephrasing the message.");
     }
