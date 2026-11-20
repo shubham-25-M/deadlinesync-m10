@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Bell, CalendarDays, Check, ChevronDown, ChevronLeft, ChevronRight, CircleHelp,
+  Bell, CalendarDays, Check, ChevronLeft, ChevronRight, CircleHelp,
   Clock3, FileText, Grid2X2, Inbox, LayoutDashboard, ListChecks, Mail, Menu,
   MessageCircle, MoreHorizontal, Plus, Search, Settings2, Sparkles, Upload,
   X, Zap,
@@ -115,6 +115,7 @@ export default function HomePage() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Restore browser state after SSR hydration to avoid a markup mismatch.
       if (saved) setDeadlines(JSON.parse(saved) as Deadline[]);
     } catch { localStorage.removeItem(STORAGE_KEY); }
     setReady(true);
@@ -235,7 +236,7 @@ export default function HomePage() {
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:19}}><div><h2 className="page-title">Schedule</h2><p className="page-subtitle" style={{marginBottom:0}}>Your deadlines, all in one timeline.</p></div><button className="btn secondary" onClick={() => {setCalendarMonth(new Date(`${selectedDate}T12:00:00`));setShowCalendar((v)=>!v)}}><CalendarDays size={14}/>{showCalendar?"Week view":"Full month"}</button></div>
           <section className="progress-card card" style={{marginBottom:17}}><div><div className="eyebrow">{MONTHS[new Date(`${selectedDate}T12:00:00`).getMonth()]} {new Date(`${selectedDate}T12:00:00`).getFullYear()}</div><div className="progress-title" style={{fontSize:19}}>{dateTimeLabel(selectedDate)}</div><div className="progress-meta">{dueOnSelected.length} deadline{dueOnSelected.length===1?"":"s"} scheduled</div></div><CalendarDays size={31} color="#7dbbff"/></section>
           {showCalendar ? <MonthCalendar month={calendarMonth} selected={selectedDate} deadlines={sorted} onSelect={(day)=>{setSelectedDate(day);setCalendarMonth(new Date(`${day}T12:00:00`))}} onMonth={(delta)=>setCalendarMonth((m)=>new Date(m.getFullYear(),m.getMonth()+delta,1))}/> : <section className="right-card card" style={{padding:"16px 12px",marginBottom:17}}><div className="week-header">{weekDates.map((d,i)=><span key={i}>{DAYS[d.getDay()]}</span>)}</div><div className="date-strip">{weekDates.map((d)=><button key={dateKey(d)} className={`date-button ${selectedDate===dateKey(d)?"active":""} ${dateKey(d)===localToday()?"today":""}`} onClick={()=>setSelectedDate(dateKey(d))}><strong>{d.getDate()}</strong><span>{d.toLocaleDateString("en-IN",{month:"short"})}</span></button>)}</div></section>}
-          <section><div className="section-head"><h2 className="section-title">{dateTimeLabel(selectedDate)}'s deadlines</h2><span style={{fontSize:10,color:"#81818e"}}>{dueOnSelected.length} items</span></div>
+          <section><div className="section-head"><h2 className="section-title">{dateTimeLabel(selectedDate)}&apos;s deadlines</h2><span style={{fontSize:10,color:"#81818e"}}>{dueOnSelected.length} items</span></div>
             {dueOnSelected.length ? <div className="schedule-list">{dueOnSelected.map((item,i)=><button className={`timeline-card ${i===0?"accent":""}`} key={item.id} onClick={()=>setDetail(item)}><div className="timeline-time">{displayTime(item.dueTime)}</div><div className="timeline-main"><strong>{item.task}</strong><span>{item.subject} · {item.sources.join(" + ")}</span></div><div className="mini-ring" style={{"--progress":`${item.progress*3.6}deg`} as React.CSSProperties}><span>{item.progress}</span></div></button>)}</div> : <div className="right-empty">No deadlines on this day. Keep your calendar calm—or add what’s next.</div>}
           </section>
           <div style={{height:18}}/><section><div className="section-head"><h2 className="section-title">Next deadlines</h2></div><div className="urgent-list">{upcoming.filter((d)=>d.dueDate!==selectedDate).slice(0,4).map(item=><button className="urgent-item" key={item.id} onClick={()=>{setSelectedDate(item.dueDate);setDetail(item)}}><div className="urgent-date">{new Date(`${item.dueDate}T12:00:00`).getDate()}<small>{humanDate(item.dueDate,{month:"short"})}</small></div><div className="urgent-info"><strong>{item.task}</strong><span>{item.subject} · {displayTime(item.dueTime)}</span></div><ChevronRight size={15}/></button>)}</div></section>

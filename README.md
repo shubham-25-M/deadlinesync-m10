@@ -4,7 +4,7 @@ A mobile-first assignment deadline dashboard for Indian college students, built 
 
 ## Run locally
 
-1. Install Node.js 20+.
+1. Install Node.js 20.9+.
 2. Copy `.env.example` to `.env.local` and set `GEMINI_API_KEY` from Google AI Studio.
 3. Run `npm install`, then `npm run dev`.
 4. Open http://localhost:3000.
